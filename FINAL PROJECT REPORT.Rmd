@@ -1,0 +1,68 @@
+---
+title: "NBA PLAYERS SALARY ANALYSIS"
+author: "Kevin Andrian Suryanto"
+output: html_notebook
+---
+
+#Abstract
+A common person would assume that the success of an NBA player's career is directly correlated with how much points they can score, and therefore would earn more salary if they have more points. However, points scored by an NBA player typically aren't the only measure of success. Moreover, although some NBA players are considered more successful than others, some of those players identified as less successful earn more than some players that are indentified as more successful.
+
+#Research Question
+What affects an NBA player's salary? What are the biggest contributing factors to a player's salary?
+
+#Packages needed
+```{r}
+library(magrittr)
+library(dplyr)
+library(DataComputing)
+```
+
+#Data for Analysis
+```{r}
+nbastats <- read.csv("nba_2017_players_stats_combined.csv")
+nbasalary <- read.csv("nba_2017_salary.csv")
+```
+These 2 datasets are obtained from Kaggle (https://www.kaggle.com/noahgift/social-power-nba), an online community of data scientists and machine learning practitioners. The data is collected by the NBA and uploaded by Noah Gift in 2017. This data is used in several studies for the IBM Developerworks: "Explore valuation and attendance using data science and machine learning" and "Exploring the individual NBA players."
+
+###Glimpse of Data
+```{r}
+head(nbastats)
+head(nbasalary)
+```
+The variable "POSITION" and "TEAM" will be deleted from nbasalary since POSITION and TEAM are already present in the nbastats dataset. The first colum will be deleted from nbastats since it is unnecessary. The two datasets will be joined by the player's name.
+```{r}
+nbastats <- nbastats[,-1]
+nbasalary <- nbasalary[,-2][,-2]
+nba <- nbastats %>%
+  left_join(nbasalary, by = c("PLAYER" = "NAME"))
+head(nba)
+```
+
+###Data Description
+The dataset "nbastats"" shows statistics for NBA players' on-court performances in the 2016-2017 season. The dataset "nbasalary" shows NBA players' salaries in the 2016-2017 season. The combined dataset has 453 cases.
+```{r}
+nrow(nba)
+```
+
+###Variables
+* Rk = Player's rank in terms of points per game
+* PLAYER = Player's name
+* POSITION = Player's position
+* AGE = Player's age
+* MP = Minutes played
+* FG = Field goals made per game
+* FGA = Field goals attempted per game
+* FG. = Field goal % (made over attempted)
+* X3P = 3-point field goal made per game
+
+#Does an NBA player's points result in higher salary?
+When referring to figure 1.1, there seems to be an upward trend which shows that higher points per game typically results in higher salary although it's not for all cases.
+```{r}
+ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG (figure 1.1)")
+```
+According to figure 1.2, higher points result in higher frequency amongst all player positions.
+```{r}
+ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point()+facet_wrap(~POSITION,ncol=4) + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG per position (figure 1.2)") 
+```
+
+
