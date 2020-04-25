@@ -8,7 +8,7 @@ output: html_notebook
 A common person would assume that the success of an NBA player's career is directly correlated with how much points they can score, and therefore would earn more salary if they have more points. However, points scored by an NBA player typically aren't the only measure of success. Moreover, although some NBA players are considered more successful than others, some of those players identified as less successful earn more than some players that are indentified as more successful.
 
 #Research Question
-What affects an NBA player's salary? What are the biggest contributing factors to a player's salary?
+What affects an NBA player's salary? What are the biggest contributing factors to a player's salary? Does more playing time result in higher salary?
 
 #Packages needed
 ```{r}
@@ -70,7 +70,7 @@ head(nbastats)
 head(nbasalary)
 ```
 The variable "POSITION" and "TEAM" will be deleted from nbasalary since "POSITION" and "TEAM" are already present in the nbastats dataset. The first colum will be deleted from nbastats since it is unnecessary. The two datasets will be joined by the player's name. Duplicates of NBA players (if any) will also be removed.
-```{r}
+```{r message=FALSE, warning=FALSE}
 nbastats <- nbastats[,-1]
 nbasalary <- nbasalary[,-2][,-2]
 nba <- nbastats %>%
@@ -105,13 +105,54 @@ nba %>%
 ```
 
 #Does an NBA player's points result in higher salary?
-When referring to figure 1.1, there seems to be an upward trend which shows that higher points per game typically results in higher salary although it's not for all cases.
 ```{r}
 ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG (figure 1.1)")
 ```
-According to figure 1.2, higher points result in higher salary amongst all player positions.
+When referring to figure 1.1, there seems to be an upward trend which shows that higher points per game typically results in higher salary although it's not for all cases.
 ```{r}
 ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point()+facet_wrap(~POSITION,ncol=4) + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG per position (figure 1.2)") 
 ```
+According to figure 1.2, higher points result in higher salary amongst all player positions. Furthermore, we will observe how other key NBA stats affect a player's salary.
 
+## Assists per game
+```{r}
+ggplot(data=nba,aes(x=AST,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of APG (figure 2.1)")
+```
+We can obseve that there is an upward trend in salary in terms of assists per game.
 
+## Rebounds per game
+```{r}
+ggplot(data=nba,aes(x=TRB,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of RPG (figure 2.2)")
+```
+We can obseve that there is an upward trend in salary in terms of rebounds per game.
+
+## Steals per game
+```{r}
+ggplot(data=nba,aes(x=STL,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of SPG (figure 2.3)")
+```
+We can obseve that there is a slight upward trend in salary in terms of steals per game although it is not significant.
+
+## Blocks per game
+```{r}
+ggplot(data=nba,aes(x=BLK,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of BPG (figure 2.4)")
+```
+We can obseve that there is a slight upward trend in salary in terms of blocks per game although it is not significant.
+
+## Minutes played per game
+```{r}
+ggplot(data=nba,aes(x=MP,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of MPG (figure 2.5)")
+```
+We can obseve that there is an upward trend in salary in terms of minutes played per game.
+
+However, although all of these key NBA stats graphically show an increasing trend, we will further perform a simple linear regression test the significance of these NBA statistic measures.
+
+##Simple Linear Regression
+Linear regression models are used to show or predict the relationship between two variables or factors. We will fit salary as the response variable and use number of points, assists, rebounds, steals, blocks, and minutes played as the predictors.
+```{r}
+model <- lm(SALARY~POINTS+AST+TRB+STL+BLK+MP)
+summary(model)
+```
+From the p-value results above, we are 95% confident that number of points, assist, and rebound have a significant relationship with a player's salary. However, we fail to reject the null hypothesis that steals, blocks, and minutes player significantly affect a player's salary.
+
+#Conclusion
+From the graphical and linear regression observations, we can conclude that the number of points per game by an NBA player significantly affects an NBA player's salary. Moreover, other key important factors such as number of assists and rebounds also significantly affect a player's salary. Some people may say that more playing time (or minutes played) have higher salaries. However, although our graph shows that there is a positive relationship between minutes played and salary, the linear regression output shows that the effect of minutes played is not significant to salary.
