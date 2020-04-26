@@ -8,7 +8,7 @@ output: html_notebook
 A common person would assume that the success of an NBA player's career is directly correlated with how much points they can score, and therefore would earn more salary if they have more points. However, points scored by an NBA player typically aren't the only measure of success. Moreover, although some NBA players are considered more successful than others, some of those players identified as less successful earn more than some players that are indentified as more successful.
 
 #Research Question
-What affects an NBA player's salary? What are the biggest contributing factors to a player's salary? Does more playing time result in higher salary?
+What affects an NBA player's salary? What are the biggest contributing factors to a player's salary? Does more playing time result in higher salary? Does different players positions affect salary?
 
 #Packages needed
 ```{r}
@@ -110,9 +110,27 @@ ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point() + stat_smooth(method=lm) + 
 ```
 When referring to figure 1.1, there seems to be an upward trend which shows that higher points per game typically results in higher salary although it's not for all cases.
 ```{r}
-ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point()+facet_wrap(~POSITION,ncol=4) + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG per position (figure 1.2)") 
+nba %>% 
+  filter(grepl("[F|C]", POSITION, ignore.case = TRUE)) %>%
+  group_by(POSITION) %>%
+  summarise(totalpoints=sum(POINTS))
 ```
-According to figure 1.2, higher points result in higher salary amongst all player positions. Furthermore, we will observe how other key NBA stats affect a player's salary.
+In the bigman positions(forwards and centers), each position seem to have a similar number of total points except PF-C.
+```{r}
+nba %>% 
+  filter(grepl("[G]", POSITION, ignore.case = TRUE)) %>%
+  group_by(POSITION) %>%
+  summarise(totalpoints=sum(POINTS))
+```
+In the smaller positions(guards), both positions only have a difference of 80.6 total points and are also higher than bigman positions on average.
+```{r}
+ggplot(data=nba,aes(x=POSITION,y=SALARY ))+geom_bar(stat='identity',position='stack', width=.9)+ ggtitle("Salary of NBA players in terms of PPG per position (figure 1.2)")  
+```
+According to figure 1.2, all 5 positions have similar salaries. However, Centers have the highest salary.
+```{r}
+ggplot(data=nba,aes(x=POINTS,y=SALARY))+geom_point()+facet_wrap(~POSITION,ncol=4) + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of PPG per position (figure 1.3)") 
+```
+According to figure 1.3, higher points result in higher salary amongst all player positions. Furthermore, we will observe how other key NBA stats affect a player's salary.
 
 ## Assists per game
 ```{r}
@@ -136,7 +154,7 @@ We can obseve that there is a slight upward trend in salary in terms of steals p
 ```{r}
 ggplot(data=nba,aes(x=BLK,y=SALARY))+geom_point() + stat_smooth(method=lm) + ggtitle("Salary of NBA players in terms of BPG (figure 2.4)")
 ```
-We can obseve that there is a slight upward trend in salary in terms of blocks per game although it is not significant.
+We can see that there is not much trend between blocks per game and a player's salary. Out of 5 of the players with 2 or more blocks per game, 4 made a salary of lower than average.
 
 ## Minutes played per game
 ```{r}
@@ -147,12 +165,12 @@ We can obseve that there is an upward trend in salary in terms of minutes played
 However, although all of these key NBA stats graphically show an increasing trend, we will further perform a simple linear regression test the significance of these NBA statistic measures.
 
 ##Simple Linear Regression
-Linear regression models are used to show or predict the relationship between two variables or factors. We will fit salary as the response variable and use number of points, assists, rebounds, steals, blocks, and minutes played as the predictors.
+Linear regression models are used to show or predict the relationship between two variables or factors. We will fit salary as the response variable and use number of points, assists, rebounds, steals, blocks, minutes, and position as the predictors.
 ```{r}
 model <- lm(SALARY~POINTS+AST+TRB+STL+BLK+MP)
 summary(model)
 ```
-From the p-value results above, we are 95% confident that number of points, assist, and rebound have a significant relationship with a player's salary. However, we fail to reject the null hypothesis that steals, blocks, and minutes player significantly affect a player's salary.
+From the p-value results above, we are 95% confident that number of points, assist, and rebound have a significant relationship with a player's salary. However, steals, blocks, and minutes player does not significantly affect a player's salary since their p-values are larger than 0.05.
 
 #Conclusion
-From the graphical and linear regression observations, we can conclude that the number of points per game by an NBA player significantly affects an NBA player's salary. Moreover, other key important factors such as number of assists and rebounds also significantly affect a player's salary. Some people may say that more playing time (or minutes played) have higher salaries. However, although our graph shows that there is a positive relationship between minutes played and salary, the linear regression output shows that the effect of minutes played is not significant to salary.
+From the graphical and linear regression observations, we can conclude that the number of points per game by an NBA player significantly affects an NBA player's salary. Moreover, other key important factors such as number of assists and rebounds also significantly affect a player's salary. Some people may say that more playing time (or minutes played) have higher salaries. However, although our graph shows that there is a positive relationship between minutes played and salary, the linear regression output shows that the effect of minutes played is not significant to salary. From the salary graphs in terms of positions, different positions does not show significance in salary difference. 
